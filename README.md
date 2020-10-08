@@ -1,5 +1,5 @@
 ## Improved_DHKE_NIS
-whats the problem?  
+what is the problem?  
 ans)
 fact many of the iot/low energy device compromise on security just 
 because the key exchange / session generation is expensive. If majority of the electricity is consumed in session generation 
@@ -8,8 +8,8 @@ productivity is dammed!!.
 ## solution we propose and how do we solve it?
 we are inspired by a research paper in which they introduce to shift all the computation that is possible at the server side,actually shifted to the server even if there are slight pre-requisites and space consumption.  
 how do we apply it ?  
-there is alice: client  
-there is bob: server
+there is alice: client.  
+there is bob: server.
 
 ## client side:
 state:  
@@ -22,12 +22,12 @@ send [A,x+t (mod) p-1, T]   //T is sent on the condition that T is not present i
 for later connections until T is unchanged only [A,x+t] can be sent
 
 ## server side:
-choose private key: y  
+choose private key: y.  
 Y equal to g^y  
 then k(ab) = ((g^(x+t%p))/T)^y  
 => ((g^x.g^t%p)/g^t%p)^y  
 =>  g^xy  
-then the server sends [B,Y] nonce and B's public key
+then the server sends [B,Y] nonce and B's public key.
 
 ## client side revisited:
 normal calculation to calculate  
@@ -60,7 +60,7 @@ c)calculate x+t (mod) p-1
 the first operation require the client to save the t,T value for future use.
 
 ### case1: a new server contacted + first operation cycle of the client too!!
-calculation of T,t is required and sending T is also required that happens on the client side. in this first cycle the server stores the T value as key value pair with key being the nonce in a hashmap
+calculation of T,t is required and sending T is also required that happens on the client side. in this first cycle the server stores the T value as key value pair with key being the nonce in a HashMap.
 
 ### case2: when client has been connected with the server in past 
 as soon as the nonce is received the server searches the hashmap and uses the value of T stored earlier (computation+time + electricity) are saved
