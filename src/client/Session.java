@@ -36,32 +36,34 @@ class Session {
         return serverPublicKey.modPow(privateSessionKey, p);
     }
 
-    public void connect() {
+    public boolean connect() {
         if (socket != null) {
             try {
                 socket.close();
             } catch (Exception e) {
-                System.out.println("Client Busy");
+                System.out.println("Client busy couldn't establish new connection");
             }
         }
         try {
             socket = new Socket(ip, port);
         } catch (Exception e) {
             System.out.println("Invalid Host or Port provided");
+            return false;
         }
-        establishIO();
+        return establishIO();
     }
 
-    private void establishIO() {
+    private boolean establishIO() {
         if (socket == null) {
             System.out.println("Establish a Connection Before");
-            return;
+            return false;
         }
         if (in != null) {
             try {
                 in.close();
             } catch (Exception e) {
                 System.out.println("Input Channel Error");
+                return false;
             }
         }
         if (out != null) {
@@ -69,6 +71,7 @@ class Session {
                 out.close();
             } catch (Exception e) {
                 System.out.println("Output Channel Error");
+                return false;
             }
         }
         try {
@@ -76,7 +79,9 @@ class Session {
             in = new DataInputStream(socket.getInputStream());
         } catch (Exception e) {
             System.out.println("Unable to open a I/O Channel");
+            return false;
         }
+        return true;
     }
 
     private void receiveKeys(BigInteger p) {

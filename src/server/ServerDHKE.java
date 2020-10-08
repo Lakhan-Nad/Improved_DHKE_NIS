@@ -52,8 +52,9 @@ public final class ServerDHKE {
             System.exit(1);
         }
         // server is ready
+        int connections = 10;
         AuthManager.load();
-        {
+        while (connections > 0) {
             Socket socket = null;
             try {
                 socket = server.accept();
@@ -62,6 +63,7 @@ public final class ServerDHKE {
             }
             if (socket != null) {
                 handleConnection(socket);
+                connections--;
             } else {
                 System.out.println("Connection Error");
             }

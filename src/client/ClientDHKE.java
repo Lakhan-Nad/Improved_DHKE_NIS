@@ -9,6 +9,7 @@ public final class ClientDHKE {
     private static final BigInteger g;
     private static BigInteger privateT;
     private static BigInteger publicT;
+    private static Session session;
 
     private ClientDHKE() {
         // empty constructor
@@ -38,10 +39,23 @@ public final class ClientDHKE {
     }
 
     public static void main(String[] args) {
-        id = "Client1";
+        if (args.length != 1) {
+            System.out.println("ClientId required");
+            System.exit(1);
+        }
+        id = args[0];
+        String message = "1. For new Connection type: connect <hostname> <port>\n2. newKeys to calculate new permanent Keys\n3. Anything else to exit application\n";
+        newSession();
+    }
+
+    private static void newSession() {
         Session session = new Session("localhost", 9001);
         session.connect();
         session.fullKeyExchange(id, p, g, privateT, publicT);
+        session.close();
+        session = new Session("localhost", 9001);
+        session.connect();
+        session.keyExchange(id, p, privateT);
         session.close();
     }
 }
