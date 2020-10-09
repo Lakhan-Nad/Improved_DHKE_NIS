@@ -52,7 +52,7 @@ public final class ServerDHKE {
             System.exit(1);
         }
         // server is ready
-        int connections = 10;
+        int connections = 2;
         AuthManager.load();
         while (connections > 0) {
             Socket socket = null;

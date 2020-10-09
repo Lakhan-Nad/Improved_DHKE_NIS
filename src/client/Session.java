@@ -104,39 +104,7 @@ class Session {
         System.out.println(sessionKey.toString());
     }
 
-    public void fullKeyExchange(String id, BigInteger p, BigInteger g, BigInteger privateT, BigInteger publicT) {
-        if (socket == null) {
-            System.out.println("First Establish a Connection");
-            return;
-        }
-        if (in == null || out == null) {
-            establishIO();
-        }
-        privateSessionKey = calcPrivateSessionKey(p);
-        BigInteger publicSessionKey = calcPublicSessionKey(privateT, p);
-        // sending keys
-        StringBuilder buf = new StringBuilder();
-        buf.append(id);
-        buf.append(' ');
-        buf.append(g.toString());
-        buf.append(' ');
-        buf.append(p.toString());
-        buf.append(' ');
-        buf.append(publicT.toString());
-        buf.append(' ');
-        buf.append(publicSessionKey.toString());
-        buf.append('\n');
-        try {
-            out.writeUTF(buf.toString());
-            out.flush();
-        } catch (Exception e) {
-            System.out.println("Unable to initiate a session");
-        }
-        // receiving keys
-        receiveKeys(p);
-    }
-
-    public void keyExchangeWithNewT(String id, BigInteger p, BigInteger privateT, BigInteger publicT) {
+    public void fullKeyExchange(String id, BigInteger p, BigInteger privateT, BigInteger publicT) {
         if (socket == null) {
             System.out.println("First Establish a Connection");
             return;

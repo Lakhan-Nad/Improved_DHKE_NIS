@@ -1,4 +1,5 @@
 out/*
-auth_keys.txt
+server_files/*
+client_files/*
 DHkeyexchange.iml
 .idea

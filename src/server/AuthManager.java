@@ -4,23 +4,28 @@ import java.io.*;
 import java.math.BigInteger;
 import java.util.HashMap;
 import java.util.Map;
+import java.nio.file.Paths;
 
 final class AuthManager {
     private static final String filename;
-    private static final Map<String, ClientData> clients;
+    private static final Map<String, BigInteger> clients;
 
     private AuthManager() {
         // empty constructor
     }
 
     static {
-        filename = "auth_keys.txt";
+        filename = Paths.get(System.getProperty("user.dir"), "server_files", "auth_keys.txt").toString();
         clients = new HashMap<>();
     }
 
     synchronized static void load() {
         clients.clear();
         File file = new File(filename);
+        if (!file.exists()) {
+            System.out.println("");
+            return;
+        }
         BufferedReader buffer;
         try {
             buffer = new BufferedReader(new FileReader(file));
@@ -38,18 +43,15 @@ final class AuthManager {
             }
             if (st != null) {
                 String[] data = st.split("\\s+");
-                BigInteger g, p, tInv;
-                if (data.length >= 4) {
+                BigInteger tInv;
+                if (data.length >= 2) {
                     try {
-                        g = new BigInteger(data[1]);
-                        p = new BigInteger(data[2]);
-                        tInv = new BigInteger(data[3]);
+                        tInv = new BigInteger(data[1]);
                     } catch (Exception e) {
                         System.out.println("Invalid data found in File");
                         continue;
                     }
-                    ClientData client = new ClientData(data[0], g, p, tInv);
-                    clients.put(data[0], client);
+                    clients.put(data[0], tInv);
                 }
             }
         } while (st != null);
@@ -61,18 +63,18 @@ final class AuthManager {
         }
     }
 
-    synchronized static ClientData find(String clientId) {
+    synchronized static BigInteger find(String clientId) {
         if (clients.containsKey(clientId)) {
             return clients.get(clientId);
         }
         return null;
     }
 
-    synchronized static void addOrUpdate(ClientData client) {
-        if (clients.containsKey(client.id)) {
-            clients.replace(client.id, client);
+    synchronized static void addOrUpdate(String id, BigInteger tInv) {
+        if (clients.containsKey(id)) {
+            clients.replace(id, tInv);
         } else {
-            clients.put(client.id, client);
+            clients.put(id, tInv);
         }
     }
 
@@ -82,6 +84,17 @@ final class AuthManager {
 
     synchronized static void syncWithFile() {
         File file = new File(filename);
+        if (!file.exists()) {
+            try {
+                if (!file.createNewFile()) {
+                    System.out.println("New File Couldn't Be Created");
+                    return;
+                }
+            } catch (Exception e) {
+                System.out.println("New File Couldn't Be Created");
+                return;
+            }
+        }
         BufferedWriter buffer;
         try {
             buffer = new BufferedWriter(new FileWriter(file));
@@ -90,28 +103,24 @@ final class AuthManager {
             return;
         }
         // empty file contents
-        try{
+        try {
             buffer.write("");
             buffer.flush();
-        }catch (Exception e){
+        } catch (Exception e) {
             System.out.println("Error while Writing in File");
             return;
         }
         StringBuffer buf = new StringBuffer();
-        clients.forEach((k,client)->{
-            buf.append(client.id);
+        clients.forEach((id, tInv) -> {
+            buf.append(id);
             buf.append(' ');
-            buf.append(client.getG().toString());
-            buf.append(' ');
-            buf.append(client.getP().toString());
-            buf.append(' ');
-            buf.append(client.getTInv().toString());
+            buf.append(tInv.toString());
             buf.append('\n');
         });
-        try{
+        try {
             buffer.write(buf.toString());
             buffer.close();
-        }catch (Exception e){
+        } catch (Exception e) {
             System.out.println("Unable to Write Data");
         }
     }
