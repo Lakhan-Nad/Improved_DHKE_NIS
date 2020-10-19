@@ -1,5 +1,7 @@
 package client;
 
+import java.io.BufferedInputStream;
+import java.io.BufferedOutputStream;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.math.BigInteger;
@@ -44,6 +46,8 @@ class Session {
                 System.out.println("Client busy couldn't establish new connection");
             }
         }
+        /* Documentation */
+        System.out.println("Sending Connection Request To Server");
         try {
             socket = new Socket(ip, port);
         } catch (Exception e) {
@@ -75,8 +79,8 @@ class Session {
             }
         }
         try {
-            out = new DataOutputStream(socket.getOutputStream());
-            in = new DataInputStream(socket.getInputStream());
+            out = new DataOutputStream(new BufferedOutputStream(socket.getOutputStream()));
+            in = new DataInputStream(new BufferedInputStream(socket.getInputStream()));
         } catch (Exception e) {
             System.out.println("Unable to open a I/O Channel");
             return false;
@@ -84,7 +88,8 @@ class Session {
         return true;
     }
 
-    private void receiveKeys(BigInteger p) {
+    public void receiveKeys(BigInteger p) {
+        System.out.println("Waiting for Server's Public Key");
         String[] receivedData;
         try {
             receivedData = in.readUTF().split("\\s+");
@@ -101,10 +106,12 @@ class Session {
             return;
         }
         sessionKey = calcSessionKey(serverPublicKey, p);
-        System.out.println(sessionKey.toString());
+        /* Documentation */
+        System.out.println("Session key Established");
+        System.out.println("Session Key:" + sessionKey.toString());
     }
 
-    public void fullKeyExchange(String id, BigInteger p, BigInteger privateT, BigInteger publicT) {
+    public void fullKeyRequest(String id, BigInteger p, BigInteger privateT, BigInteger publicT) {
         if (socket == null) {
             System.out.println("First Establish a Connection");
             return;
@@ -112,6 +119,8 @@ class Session {
         if (in == null || out == null) {
             establishIO();
         }
+        /* Documentation */
+        System.out.println("Starting Key Exchange");
         privateSessionKey = calcPrivateSessionKey(p);
         BigInteger publicSessionKey = calcPublicSessionKey(privateT, p);
         // sending keys
@@ -128,11 +137,11 @@ class Session {
         } catch (Exception e) {
             System.out.println("Unable to initiate a session");
         }
-        // receiving keys
-        receiveKeys(p);
+        /* Documentation */
+        System.out.println("Request for Key Exchange Sent to Server");
     }
 
-    public void keyExchange(String id, BigInteger p, BigInteger privateT) {
+    public void keyRequest(String id, BigInteger p, BigInteger privateT) {
         if (socket == null) {
             System.out.println("First Establish a Connection");
             return;
@@ -140,6 +149,8 @@ class Session {
         if (in == null || out == null) {
             establishIO();
         }
+        /* Documentation */
+        System.out.println("Starting Key Exchange");
         privateSessionKey = calcPrivateSessionKey(p);
         BigInteger publicSessionKey = calcPublicSessionKey(privateT, p);
         // sending keys
@@ -154,8 +165,8 @@ class Session {
         } catch (Exception e) {
             System.out.println("Unable to initiate a session");
         }
-        // receiving keys
-        receiveKeys(p);
+        /* Documentation */
+        System.out.println("Request for Key Exchange Sent to Server");
     }
 
     public void close() {
@@ -169,6 +180,8 @@ class Session {
         } catch (Exception e) {
             System.out.println("Unable to close Resources");
         }
+        /* Documentation */
+        System.out.println("Connection with Server Closed");
     }
 
     public void communicate() {

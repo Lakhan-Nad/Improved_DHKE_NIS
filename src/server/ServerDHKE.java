@@ -52,6 +52,8 @@ public final class ServerDHKE {
             System.exit(1);
         }
         // server is ready
+        /* Documentation */
+        System.out.println("Server Started At: " + server.getLocalPort());
         int connections = 2;
         AuthManager.load();
         while (connections > 0) {
