@@ -1,3 +1,7 @@
+/**
+ * The Class to maintain a single session connected by the Client
+ */
+
 package client;
 
 import java.io.BufferedInputStream;
@@ -18,11 +22,21 @@ class Session {
     private final String ip;
     private final int port;
 
+    /**
+     * @param ip the ip address or host to connect
+     * @param port the port number to identify the process
+     */
     public Session(String ip, int port) {
         this.ip = ip;
         this.port = port;
     }
 
+    /**
+     * A utility Function to calculate Session Key
+     * @param p The prime number is needed to calculate the session key
+     *          Session key is a random number between 1 and p-1
+     * @return THe session key
+     */
     private static BigInteger calcPrivateSessionKey(BigInteger p) {
         Random rand = new Random();
         BigInteger randomLong = BigInteger.valueOf(rand.nextLong());
@@ -30,14 +44,30 @@ class Session {
         return midState.divideAndRemainder(BigInteger.valueOf(Long.MAX_VALUE))[0];
     }
 
+    /**
+     * A function to calculate (x+t) % p
+     * @param privateT is the private session key (x)
+     * @param p is the prime no
+     * @return (x+t)%(p-1)
+     */
     private BigInteger calcPublicSessionKey(BigInteger privateT, BigInteger p) {
         return privateSessionKey.add(privateT).mod(p.subtract(BigInteger.ONE));
     }
 
+    /**
+     * Calculates the session key
+     * @param serverPublicKey public key returned by server
+     * @param p the prime no
+     * @return the calculated session key
+     */
     private BigInteger calcSessionKey(BigInteger serverPublicKey, BigInteger p) {
         return serverPublicKey.modPow(privateSessionKey, p);
     }
 
+    /**
+     * Function called to connect to Server
+     * @return if connection was established or not
+     */
     public boolean connect() {
         if (socket != null) {
             try {
@@ -57,6 +87,10 @@ class Session {
         return establishIO();
     }
 
+    /**
+     * To check if IO from server is established or not
+     * @return boolean for same
+     */
     private boolean establishIO() {
         if (socket == null) {
             System.out.println("Establish a Connection Before");
@@ -88,6 +122,10 @@ class Session {
         return true;
     }
 
+    /**
+     * Receive Keys from the Server
+     * @param p prime number
+     */
     public void receiveKeys(BigInteger p) {
         System.out.println("Waiting for Server's Public Key");
         String[] receivedData;
@@ -111,6 +149,13 @@ class Session {
         System.out.println("Session Key:" + sessionKey.toString());
     }
 
+    /**
+     * Function to start the Key Request
+     * @param id the client id, to send the server a client's info
+     * @param p the prime no
+     * @param privateT the permanent key t of the client
+     * @param publicT the public permanent key
+     */
     public void fullKeyRequest(String id, BigInteger p, BigInteger privateT, BigInteger publicT) {
         if (socket == null) {
             System.out.println("First Establish a Connection");
@@ -123,7 +168,9 @@ class Session {
         System.out.println("Starting Key Exchange");
         privateSessionKey = calcPrivateSessionKey(p);
         BigInteger publicSessionKey = calcPublicSessionKey(privateT, p);
-        // sending keys
+        // sending keys to client
+        // First build the message with a particular format
+        // "id T (x+t)(p-1)\n"
         StringBuilder buf = new StringBuilder();
         buf.append(id);
         buf.append(' ');
@@ -132,6 +179,7 @@ class Session {
         buf.append(publicSessionKey.toString());
         buf.append('\n');
         try {
+            // send the keys
             out.writeUTF(buf.toString());
             out.flush();
         } catch (Exception e) {
@@ -141,6 +189,12 @@ class Session {
         System.out.println("Request for Key Exchange Sent to Server");
     }
 
+    /**
+     * A function for sending key request but without T
+     * @param id the client id
+     * @param p the prime no
+     * @param privateT the permanent key t of the client
+     */
     public void keyRequest(String id, BigInteger p, BigInteger privateT) {
         if (socket == null) {
             System.out.println("First Establish a Connection");
@@ -153,7 +207,8 @@ class Session {
         System.out.println("Starting Key Exchange");
         privateSessionKey = calcPrivateSessionKey(p);
         BigInteger publicSessionKey = calcPublicSessionKey(privateT, p);
-        // sending keys
+        // sending keys to server of format
+        // "id (x+t)%(p-1)\n"
         StringBuilder buf = new StringBuilder();
         buf.append(id);
         buf.append(' ');
@@ -169,6 +224,9 @@ class Session {
         System.out.println("Request for Key Exchange Sent to Server");
     }
 
+    /**
+     * Close the connection
+     */
     public void close() {
         try {
             if (socket != null)
@@ -184,6 +242,9 @@ class Session {
         System.out.println("Connection with Server Closed");
     }
 
+    /**
+     * A function to communicate from the server
+     */
     public void communicate() {
     }
 }

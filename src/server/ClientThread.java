@@ -15,20 +15,13 @@ public final class ClientThread extends Thread {
     DataInputStream in = null;
     DataOutputStream out = null;
 
+    /**
+     * The G and P constants same for
+     * both client and server and available to all.
+     */
     static {
         P = new BigInteger("B10B8F96A080E01DDE92DE5EAE5D54EC52C99FBCFB06A3C69A6A9DCA52D23B616073E28675A23D189838EF1E2EE652C013ECB4AEA906112324975C3CD49B83BFACCBDD7D90C4BD7098488E9C219A73724EFFD6FAE5644738FAA31A4FF55BCCC0A151AF5F0DC8B4BD45BF37DF365C1A65E68CFDA76D4DA708DF1FB2BC2E4A4371", 16);
         G = new BigInteger("A4D1CBD5C3FD34126765A442EFB99905F8104DD258AC507FD6406CFF14266D31266FEA1E5C41564B777E690F5504F213160217B4B01B886A5E91547F9E2749F4D7FBD7D3B9A92EE1909D0D2263F80A76A6A24C087A091F531DBF0A0169B6A28AD662A4D18E73AFA32D779D5918D08BC8858F4DCEF97C2A24855E6EEB22B3B2E5", 16);
-    }
-
-    public static void waitForEnter(String message, Object... args) {
-        Console c = System.console();
-        if (c != null) {
-            // printf-like arguments
-            if (message != null)
-                c.format(message, args);
-            c.format(" --Press ENTER to proceed.");
-            c.readLine();
-        }
     }
 
     ClientThread(Socket socket, String id) {
@@ -36,6 +29,10 @@ public final class ClientThread extends Thread {
         this.socket = socket;
     }
 
+    /**
+     * To see if the I/O Channels are available for a given client
+     * and if yes open them
+     */
     private void establishIO() {
         if (in != null) {
             try {
@@ -65,6 +62,10 @@ public final class ClientThread extends Thread {
         }
     }
 
+    /**
+     * To run this particular client thread
+     * Entry point of client communication
+     */
     public void run() {
         establishIO();
         keyExchange();
@@ -72,6 +73,10 @@ public final class ClientThread extends Thread {
         close();
     }
 
+    /**
+     * A utility to close the connection and
+     * release the resources
+     */
     private void close() {
         try {
             if (socket != null)
@@ -87,6 +92,12 @@ public final class ClientThread extends Thread {
         System.out.println("Connection Closed");
     }
 
+    /**
+     * A utility to handle keu exchange with client
+     *
+     * The function handles the cases of receiving key from client
+     * and then also send back the keys.
+     */
     private void keyExchange() {
         if (in == null || out == null) {
             establishIO();
@@ -104,6 +115,10 @@ public final class ClientThread extends Thread {
                 }
             }
         }
+        // if message is received then break the message
+        // into client id client's public session key received
+        // and also the xplust variable
+        // Handle two different cases of xplust received or not
         String clientId = clientInfo[0];
         BigInteger xplust;
         if (clientInfo.length == 2) {
@@ -142,6 +157,8 @@ public final class ClientThread extends Thread {
         System.out.println("Sending Public Key back to Client: " + socket.getInetAddress());
 
         // sending back keys
+        // format of key change
+        // "server-id public-key-server"
         StringBuilder buf = new StringBuilder();
         buf.append(serverId);
         buf.append(' ');
@@ -165,9 +182,17 @@ public final class ClientThread extends Thread {
         System.out.println("Session Key: " + sessionKey.toString());
     }
 
+    /**
+     * A utility to communicate with client
+     */
     private void communicate() {
     }
 
+    /**
+     * A utility function
+     * @return A random key that will be private session key
+     * for this session with this client
+     */
     private static BigInteger calcPrivateSessionKey() {
         Random rand = new Random();
         BigInteger randomLong = BigInteger.valueOf(rand.nextLong());
@@ -175,14 +200,31 @@ public final class ClientThread extends Thread {
         return midState.divideAndRemainder(BigInteger.valueOf(Long.MAX_VALUE))[0];
     }
 
+    /**
+     * To calculate the public key of server
+     * @param privateKey the private key of server
+     * @return the calculated public key
+     */
     private static BigInteger calcPublicKey(BigInteger privateKey) {
         return G.modPow(privateKey, P);
     }
 
+    /**
+     * A function to calculate session key
+     * @param clientPublicKey the client's public key
+     * @param privateKey the server's private session key
+     * @return the session key
+     */
     private static BigInteger calcSessionKey(BigInteger clientPublicKey, BigInteger privateKey) {
         return clientPublicKey.modPow(privateKey, P);
     }
 
+    /**
+     * A utility to compute the client's public key given xplust and other parameters
+     * @param xplust the received session key from client
+     * @param tInv the client's tInv either from memory or received from client
+     * @return
+     */
     private static BigInteger calcClientPublicKey(BigInteger xplust, BigInteger tInv) {
         return G.modPow(xplust, P).multiply(tInv);
     }

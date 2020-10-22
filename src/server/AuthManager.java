@@ -1,3 +1,8 @@
+/**
+ * A class to manage the access to saved info about a
+ * client and its key T.
+ * The class is thread safe to avoid race conditions
+ */
 package server;
 
 import java.io.*;
@@ -8,19 +13,24 @@ import java.nio.file.Paths;
 
 final class AuthManager {
     private static final String filename;
-    private static final Map<String, BigInteger> clients;
+    private static final    HashMap<String, BigInteger> clients;
 
     private AuthManager() {
         // empty constructor
     }
 
+    /**
+     * Static initialization of filename and hashmap
+     */
     static {
         filename = Paths.get(System.getProperty("user.dir"), "server_files", "auth_keys.txt").toString();
         clients = new HashMap<>();
     }
 
+    /**
+     * Utility to load the file data to the hashmap
+     */
     synchronized static void load() {
-        clients.clear();
         File file = new File(filename);
         if (!file.exists()) {
             System.out.println("");
@@ -51,7 +61,7 @@ final class AuthManager {
                         System.out.println("Invalid data found in File");
                         continue;
                     }
-                    clients.put(data[0], tInv);
+                    addOrUpdate(data[0], tInv);
                 }
             }
         } while (st != null);
@@ -63,6 +73,11 @@ final class AuthManager {
         }
     }
 
+    /**
+     * Find a clients tInv value
+     * @param clientId id of client
+     * @return tInv if found else null
+     */
     synchronized static BigInteger find(String clientId) {
         if (clients.containsKey(clientId)) {
             return clients.get(clientId);
@@ -70,6 +85,11 @@ final class AuthManager {
         return null;
     }
 
+    /**
+     * Add or Update a Clients tInv integer
+     * @param id client id
+     * @param tInv the tInv value for client to save for future use
+     */
     synchronized static void addOrUpdate(String id, BigInteger tInv) {
         if (clients.containsKey(id)) {
             clients.replace(id, tInv);
@@ -78,11 +98,20 @@ final class AuthManager {
         }
     }
 
+    /**
+     * Delete a client's identified by key from hashmap
+     * @param clientId client id
+     */
     synchronized static void delete(String clientId) {
         clients.remove(clientId);
     }
 
+    /**
+     * A utility to save the contents of hashmap in a file
+     */
     synchronized static void syncWithFile() {
+        // load to check for not losing the file data
+        load();
         File file = new File(filename);
         if (!file.exists()) {
             try {

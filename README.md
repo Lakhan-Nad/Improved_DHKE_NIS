@@ -94,6 +94,29 @@ java client.ClientDHKE Client1
 ```
 
 
+# Flow of the code and algorithm
+
+ To begin: A client and server program to be executed in different terminals  
+    - Starting a server opens a new socket for listening a connection  
+    - The client application can then connect to server
+ - the client creates a new **Session** 
+ - client call's **Session::connect**
+ - the server waiting for connection accepts the connection from client into socket
+ - the server creates a new **ClientThread** object and send it the socket to handle the client
+ - the client thread responsible for handling client establishes the I/O to send messages through sockets
+ - thread calls the **ClientThread::keyExchange** method to start the key exchange process before any further communication
+ - the client thread waits for two minutes to receive a message from the client for key exchange
+ - in the meantime client can start the key exchange process by either invoking **Session::fullKeyRequest** or **Session::keyRequest**
+ - when client thread accepts the request then three cases as explained above is handled by client thread
+ - the client thread if a key exchange request is valid calculates the session key
+ - it calls **ClientThread::calcPrivateKey** and **ClientThread::calcPublicKey** and then **ClientThread::calcClientPublicKey**
+ - after this client sends back server's public key to client
+ - then client thread using the parameters calculated above calculates the **session_key** using **ClientThread::calcSessionKey**
+ - in the meantime client wait's for server's public keys
+ - client calls **Session::receiveKeys** which receives public keys of server also calculates **session_key** using **Session::calcSessionKey**  
+
+
+
 
 
 
