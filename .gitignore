@@ -1,5 +1,6 @@
 out/*
 server_files/*
 client_files/*
-DHkeyexchange.iml
-.idea
+*.iml
+.idea/*
+*.class

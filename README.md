@@ -81,16 +81,26 @@ with regular diffie hellman and then finally conclude the project:
 
 # Diffie Hellman Key Exchange for Thin Clients
 
-To run Server
+How to Run:
+
+- Make sure you are in root directory of project
+- JDK installed in your machine and Java Path set
+
+For Starting Server:
+
 ```shell script
-java server.ServerDHKE <serverId> <port>
-java server.ServerDHKE Server1 9001 
+# For compilation
+javac -classpath src/ src/server/ServerDHKE.java 
+# For Execution - Arguments are mandatory
+java -classpath src/ server.ServerDHKE <server_id> 9001
 ```
 
-To run a Single Client
+For Starting Client
 ```shell script
-java client.ClientDHKE <clientId> 
-java client.ClientDHKE Client1
+# For compilation
+javac -classpath src/ src/client/ClientDHKE.java 
+# For Execution - Arguments are mandatory
+java -classpath src/ client.ClientDHKE <client_id>
 ```
 
 

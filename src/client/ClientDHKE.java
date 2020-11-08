@@ -95,9 +95,12 @@ public final class ClientDHKE {
         session = new Session("localhost", 9001);
         session.connect();
         waitForEnter("Send Key Exchange Request To Server? (Key Request Must be Sent within Two Minutes of Connection)");
+        long startKeyExchange = System.currentTimeMillis();
         session.fullKeyRequest(id, p, privateT, publicT);
-        waitForEnter("Receive Server's Public Key?");
+        // waitForEnter("Receive Server's Public Key?");
         session.receiveKeys(p);
+        long endKeyExchange = System.currentTimeMillis();
+        System.out.println("Elapsed Time: " + (endKeyExchange-startKeyExchange));
         session.close();
     }
 }

@@ -47,7 +47,7 @@ public final class ServerDHKE {
      * @return thread created to handle client
      */
     private static Thread handleConnection(Socket socket) {
-        System.out.println("Connection request from: " + socket.getInetAddress());
+        System.out.println("Connection request from: " + socket.getRemoteSocketAddress().toString());
         Thread th = new ClientThread(socket, id);
         try {
             th.start();

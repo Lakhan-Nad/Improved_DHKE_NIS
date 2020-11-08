@@ -6,12 +6,13 @@ import java.net.Socket;
 import java.util.Random;
 
 public final class ClientThread extends Thread {
+    private static final long threadSleep = 3000; // 3 seconds
     private static final BigInteger P;
     private static final BigInteger G;
     private final String serverId;
     private final Socket socket;
+    private final String clientAddress;
     private BigInteger sessionKey;
-    private long maxWait = 2 * 60 * 1000; // 2 minutes
     DataInputStream in = null;
     DataOutputStream out = null;
 
@@ -27,6 +28,7 @@ public final class ClientThread extends Thread {
     ClientThread(Socket socket, String id) {
         this.serverId = id;
         this.socket = socket;
+        this.clientAddress = socket.getRemoteSocketAddress().toString();
     }
 
     /**
@@ -70,6 +72,11 @@ public final class ClientThread extends Thread {
         establishIO();
         keyExchange();
         //communicate();
+        try {
+            sleep(threadSleep);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
         close();
     }
 
@@ -89,7 +96,7 @@ public final class ClientThread extends Thread {
             System.out.println("Unable to Close the Connection");
         }
         /* Documentation */
-        System.out.println("Connection Closed");
+        System.out.println("Connection Closed of: " + this.clientAddress);
     }
 
     /**
@@ -110,6 +117,8 @@ public final class ClientThread extends Thread {
                 clientInfo = in.readUTF().split("\\s+");
                 break;
             } catch (IOException e) {
+                // 2 minutes
+                long maxWait = 2 * 60 * 1000;
                 if(System.currentTimeMillis() - waitStart > maxWait){
                     return;
                 }
@@ -148,13 +157,13 @@ public final class ClientThread extends Thread {
             return;
         }
         /* Documentation */
-        System.out.println("Key Exchange Request Received form: " + socket.getInetAddress());
+        System.out.println("Key Exchange Request Received form: " + this.clientAddress);
 
         BigInteger privateKey = calcPrivateSessionKey();
         BigInteger publicKey = calcPublicKey(privateKey);
 
         /* Documentation */
-        System.out.println("Sending Public Key back to Client: " + socket.getInetAddress());
+        System.out.println("Sending Public Key back to Client: " + this.clientAddress);
 
         // sending back keys
         // format of key change
@@ -223,7 +232,7 @@ public final class ClientThread extends Thread {
      * A utility to compute the client's public key given xplust and other parameters
      * @param xplust the received session key from client
      * @param tInv the client's tInv either from memory or received from client
-     * @return
+     * @return Public Key of Client
      */
     private static BigInteger calcClientPublicKey(BigInteger xplust, BigInteger tInv) {
         return G.modPow(xplust, P).multiply(tInv);
