@@ -69,8 +69,11 @@ public final class ClientThread extends Thread {
      * Entry point of client communication
      */
     public void run() {
+        int noOfKeyExchanges = 1;
         establishIO();
-        keyExchange();
+        for (int i = 0; i < noOfKeyExchanges; i++) {
+            keyExchange();
+        }
         //communicate();
         try {
             sleep(threadSleep);
@@ -101,7 +104,7 @@ public final class ClientThread extends Thread {
 
     /**
      * A utility to handle keu exchange with client
-     *
+     * <p>
      * The function handles the cases of receiving key from client
      * and then also send back the keys.
      */
@@ -112,14 +115,14 @@ public final class ClientThread extends Thread {
         String[] clientInfo;
         // wait for KeyExchange to Initiate for 2 Minutes;
         long waitStart = System.currentTimeMillis();
-        while(true) {
+        while (true) {
             try {
                 clientInfo = in.readUTF().split("\\s+");
                 break;
             } catch (IOException e) {
                 // 2 minutes
                 long maxWait = 2 * 60 * 1000;
-                if(System.currentTimeMillis() - waitStart > maxWait){
+                if (System.currentTimeMillis() - waitStart > maxWait) {
                     return;
                 }
             }
@@ -199,6 +202,7 @@ public final class ClientThread extends Thread {
 
     /**
      * A utility function
+     *
      * @return A random key that will be private session key
      * for this session with this client
      */
@@ -211,6 +215,7 @@ public final class ClientThread extends Thread {
 
     /**
      * To calculate the public key of server
+     *
      * @param privateKey the private key of server
      * @return the calculated public key
      */
@@ -220,8 +225,9 @@ public final class ClientThread extends Thread {
 
     /**
      * A function to calculate session key
+     *
      * @param clientPublicKey the client's public key
-     * @param privateKey the server's private session key
+     * @param privateKey      the server's private session key
      * @return the session key
      */
     private static BigInteger calcSessionKey(BigInteger clientPublicKey, BigInteger privateKey) {
@@ -230,8 +236,9 @@ public final class ClientThread extends Thread {
 
     /**
      * A utility to compute the client's public key given xplust and other parameters
+     *
      * @param xplust the received session key from client
-     * @param tInv the client's tInv either from memory or received from client
+     * @param tInv   the client's tInv either from memory or received from client
      * @return Public Key of Client
      */
     private static BigInteger calcClientPublicKey(BigInteger xplust, BigInteger tInv) {

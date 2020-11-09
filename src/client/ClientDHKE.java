@@ -97,9 +97,12 @@ public final class ClientDHKE {
         waitForEnter("Send Key Exchange Request To Server? (Key Request Must be Sent within Two Minutes of Connection)");
         Runtime runtime = Runtime.getRuntime();
         long startKeyExchange = System.currentTimeMillis();
-        session.fullKeyRequest(id, p, privateT, publicT);
-        // waitForEnter("Receive Server's Public Key?");
-        session.receiveKeys(p);
+        int noOfKeyExchanges = 1;
+        for(int i = 0; i < noOfKeyExchanges; i++) {
+            session.fullKeyRequest(id, p, privateT, publicT);
+            // waitForEnter("Receive Server's Public Key?");
+            session.receiveKeys(p);
+        }
         long endKeyExchange = System.currentTimeMillis();
         System.out.println("Elapsed Time: " + (endKeyExchange-startKeyExchange));
         System.out.println("Memory Usage: " + (runtime.totalMemory() - runtime.freeMemory()));
