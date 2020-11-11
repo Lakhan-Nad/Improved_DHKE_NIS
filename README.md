@@ -3,7 +3,7 @@ what is the problem?
 ans)
 fact many of the iot/low energy device compromise on security just 
 because the key exchange / session generation is expensive. If majority of the electricity is consumed in session generation 
-productivity is dammed!!. 
+productivity is reduced. 
 
 ## solution we propose and how do we solve it?
 we are inspired by a research paper in which they introduce to shift all the computation that is possible at the server side,actually shifted to the server even if there are slight pre-requisites and space consumption.  
